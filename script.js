@@ -17,6 +17,12 @@ document.addEventListener("DOMContentLoaded", function () {
   let uncompletedCount = 0;
   let currentFilter = "all";
 
+  // Load tasks from localStorage when the page loads
+  const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  savedTasks.forEach((taskText) => {
+    addTaskFromStorage(taskText);
+  });
+
   addTaskButton.addEventListener("click", function () {
     addTask();
   });
@@ -65,29 +71,87 @@ document.addEventListener("DOMContentLoaded", function () {
     clearCompletedTasks();
   });
 
+  let alertTimeout;
+
   function addTask() {
     const taskText = newTaskInput.value.trim();
     if (taskText) {
-      taskCount++;
-      uncompletedCount++;
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <div class="task">
-          <button class="done-button">&#10003;</button>
-          &#187;
-          <span class="task-text"> ${taskText}</span>
-          <div class="task-buttons">
-            <button class="delete-button">X</button>
-            <button class="edit-button">Edit</button>
-            <input type="checkbox" id="select-unselect-all">
-          </div>
-        </div>
-      `;
-      taskList.appendChild(li);
+      addTaskFromStorage(taskText);
       newTaskInput.value = "";
       updateTaskCount();
-      attachTaskButtonListeners(li);
+
+      // Clear any existing alert timeout
+      if (alertTimeout) {
+        clearTimeout(alertTimeout);
+      }
+
+      // Check if a previous alert exists and remove it
+      const previousAlert = document.getElementById("custom-alert");
+      if (previousAlert) {
+        document.body.removeChild(previousAlert);
+      }
+
+      // Create and append the custom alert elements
+      const customAlert = document.createElement("div");
+      customAlert.id = "custom-alert";
+
+      const okButton = document.createElement("button");
+      okButton.id = "custom-alert-ok";
+      okButton.textContent = "OK";
+
+      customAlert.textContent = "Task added";
+      customAlert.appendChild(okButton);
+
+      // Append the custom alert to the body
+      document.body.appendChild(customAlert);
+
+      // Show the custom alert
+      customAlert.style.display = "block";
+      okButton.addEventListener("click", hideAlert);
+
+      // Automatically hide the alert after 3 seconds
+      alertTimeout = setTimeout(() => {
+        hideAlert();
+      }, 1500); // 3000 milliseconds (3 seconds)
     }
+  }
+
+  // Hide the custom alert
+  function hideAlert() {
+    const customAlert = document.getElementById("custom-alert");
+    customAlert.style.display = "none";
+    alertTimeout = null; // Reset the timeout reference
+  }
+
+  // Hide the custom alert
+  function hideAlert() {
+    const customAlert = document.getElementById("custom-alert");
+    customAlert.style.display = "none";
+  }
+
+  function addTaskFromStorage(taskText) {
+    taskCount++;
+    uncompletedCount++;
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <div class="task">
+        <button class="done-button">&#10003;</button>
+        &#187;
+        <span class="task-text"> ${taskText}</span>
+        <div class="task-buttons">
+          <button class="delete-button">X</button>
+          <button class="edit-button">Edit</button>
+          <input type="checkbox" id="select-unselect-all">
+        </div>
+        
+      </div>
+    `;
+    taskList.appendChild(li);
+    updateTaskCount();
+    attachTaskButtonListeners(li);
+
+    // Save the updated tasks to localStorage
+    saveTasksToStorage();
   }
 
   function clearCompletedTasks() {
@@ -131,6 +195,9 @@ document.addEventListener("DOMContentLoaded", function () {
       updateTaskCount();
       filterTasks();
     });
+
+    // Save the updated tasks to localStorage
+    saveTasksToStorage();
   }
 
   function deleteAll() {
@@ -139,9 +206,13 @@ document.addEventListener("DOMContentLoaded", function () {
     uncompletedCount = 0;
     updateTaskCount();
     filterTasks();
+
+    // Save the updated tasks to localStorage
+    saveTasksToStorage();
   }
 
   function attachTaskButtonListeners(taskElement) {
+    // ... Your existing code for attaching listeners
     const doneButton = taskElement.querySelector(".done-button");
     const deleteButton = taskElement.querySelector(".delete-button");
     const editButton = taskElement.querySelector(".edit-button");
@@ -149,22 +220,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     doneButton.addEventListener("click", function () {
       taskTextElement.classList.toggle("completed");
-      // deleteButton.disabled = true;
+      deleteButton.disabled = true;
       editButton.disabled = true;
 
       if (taskTextElement.classList.contains("completed")) {
         taskElement.style.color = "#28a745";
+
         taskElement.style.boxShadow = "none";
         doneButton.style.background =
           " linear-gradient(to right, #DCE35B, #45B649)";
         editButton.style.background = "#ccc";
         editButton.style.pointerEvents = "none";
+        // editButton.style.textDecoration = "line-through";
         uncompletedCount--;
         updateTaskCount();
       } else {
         taskElement.style.backgroundColor = "white";
+        // taskElement.style.boxShadow = "0 0 10px red";
         taskElement.style.color = "black";
         doneButton.style.background = "#ccc";
+        // editButton.style.textDecoration = "none";
         editButton.style.background =
           "linear-gradient(to right, #f7971e, #ffd200)";
         editButton.style.pointerEvents = "auto";
@@ -200,6 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function filterTasks() {
+    // ... Your existing code for filtering tasks
     const tasks = taskList.querySelectorAll("li");
     tasks.forEach((task) => {
       const taskTextElement = task.querySelector(".task-text");
@@ -241,10 +317,22 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function setActiveButton(clickedButton) {
+    // ... Your existing code for setting active button
     const filterButtons = document.querySelectorAll(".filter-div button");
     filterButtons.forEach((button) => {
       button.classList.remove("selected");
     });
     clickedButton.classList.add("selected");
   }
+
+  // Function to save tasks to localStorage
+  function saveTasksToStorage() {
+    const tasks = Array.from(taskList.querySelectorAll(".task-text")).map(
+      (taskTextElement) => taskTextElement.textContent.trim()
+    );
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }
+
+  // Initial call to load tasks and update the task count
+  updateTaskCount();
 });

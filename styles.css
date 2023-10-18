@@ -204,31 +204,6 @@ button:hover {
 }
 
 
-/* al;ert */
-#custom-alert {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: 300px;
-    background: linear-gradient(to right, #DCE35B, #45B649);
-    color: white;
-    text-align: center;
-    border-radius: 0 0 10px 10px; 
-    padding: 10px;
-  }
-  
-  #custom-alert-ok {
-    margin-top: 2px; 
-    padding: 5px 5px;
-    background: #f5ce0a;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
 /* Default styles for larger screens */
 /* Add a media query for screens with a maximum width of 768px (typical tablet size) */
 @media (max-width: 768px) {
