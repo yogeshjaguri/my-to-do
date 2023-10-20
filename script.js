@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     doneButton.addEventListener("click", function () {
       taskTextElement.classList.toggle("completed");
-      deleteButton.disabled = true;
+      deleteButton.disabled = false;
       editButton.disabled = true;
 
       if (taskTextElement.classList.contains("completed")) {
